@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Resume Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 30px;
+            background-color: #f4f4f4;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, textarea {
+            width: 90%;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            margin: 10px 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+        pre {
+            white-space: pre-wrap;
+            text-align: left;
+            background-color: #ffffff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Build Your Resume with AI</h1>
+    <form id="resumeForm">
+        <input type="text" name="full_name" placeholder="Full Name" required><br>
+        <input type="email" name="email" placeholder="Email" required><br>
+        <input type="text" name="job_title" placeholder="Target Job Title" required><br>
+        <textarea name="skills" placeholder="Skills (comma separated)" required></textarea><br>
+        <textarea name="experiences" placeholder="Work Experience Highlights (separate with |)" required></textarea><br>
+        <button type="submit">Generate Resume</button>
+        <button type="button" onclick="generateCoverLetter()">Generate Cover Letter</button>
+        <button type="button" onclick="copyToClipboard()">Copy to Clipboard</button>
+    </form>
+
+    <h2>Your AI-Generated Output:</h2>
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                full_name: form.full_name.value,
+                email: form.email.value,
+                job_title: form.job_title.value,
+                skills: form.skills.value.split(","),
+                experiences: form.experiences.value.split("|")
+            };
+            const response = await fetch('http://127.0.0.1:8000/generate_resume/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            document.getElementById('result').innerText = result.resume;
+        });
+
+        async function generateCoverLetter() {
+            const form = document.getElementById('resumeForm');
+            const data = {
+                full_name: form.full_name.value,
+                email: form.email.value,
+                job_title: form.job_title.value,
+                skills: form.skills.value.split(","),
+                experiences: form.experiences.value.split("|")
+            };
+            const response = await fetch('http://127.0.0.1:8000/generate_resume/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            document.getElementById('result').innerText = "COVER LETTER:\n\n" + result.resume;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('result').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copied to clipboard!");
+            });
+        }
+    </script>
+</body>
+</html>
