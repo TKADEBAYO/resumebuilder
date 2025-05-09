@@ -59,10 +59,16 @@
             background-color: #2a2a2a;
             border-color: #444;
         }
+        .premium-only[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <h1>Build Your Resume with AI</h1>
+    <button onclick="window.location.href='https://buy.stripe.com/test_3cs3fS5ezaoI2nmaEE'">Unlock Premium Features (£9.99)</button>
+
     <form id="resumeForm">
         <input type="text" name="full_name" placeholder="Full Name" required><br>
         <input type="email" name="email" placeholder="Email" required><br>
@@ -70,16 +76,16 @@
         <textarea name="skills" placeholder="Skills (comma separated)" required></textarea><br>
         <textarea name="experiences" placeholder="Work Experience Highlights (separate with |)" required></textarea><br>
         <label for="template">Choose Resume Style:</label>
-        <select name="template" id="template">
+        <select name="template" id="template" class="premium-only" disabled>
             <option value="modern">Modern</option>
             <option value="corporate">Corporate</option>
             <option value="creative">Creative</option>
         </select><br>
         <button type="submit">Generate Resume</button>
-        <button type="button" onclick="generateCoverLetter()">Generate Cover Letter</button>
+        <button type="button" onclick="generateCoverLetter()" class="premium-only" disabled>Generate Cover Letter</button>
         <button type="button" onclick="copyToClipboard()">Copy to Clipboard</button>
-        <button type="button" onclick="downloadPDF()">Download as PDF</button>
-        <button type="button" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+        <button type="button" onclick="downloadPDF()" class="premium-only" disabled>Download as PDF</button>
+        <button type="button" onclick="toggleDarkMode()" class="premium-only" disabled>Toggle Dark Mode</button>
     </form>
 
     <h2>Your AI-Generated Output:</h2>
@@ -87,6 +93,15 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
+        const premium = localStorage.getItem("premium") === "true" || window.location.search.includes("premium=true");
+
+        function enablePremiumFeatures() {
+            document.querySelectorAll('.premium-only').forEach(btn => btn.removeAttribute('disabled'));
+            localStorage.setItem("premium", "true");
+        }
+
+        if (premium) enablePremiumFeatures();
+
         document.getElementById('resumeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = e.target;
@@ -109,6 +124,7 @@
         });
 
         async function generateCoverLetter() {
+            if (!premium) return alert("Unlock premium to access this feature");
             const form = document.getElementById('resumeForm');
             const data = {
                 full_name: form.full_name.value,
@@ -134,6 +150,7 @@
         }
 
         async function downloadPDF() {
+            if (!premium) return alert("Unlock premium to access this feature");
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const result = document.getElementById('result').innerText;
@@ -170,10 +187,10 @@
         }
 
         function toggleDarkMode() {
+            if (!premium) return alert("Unlock premium to access this feature");
             document.body.classList.toggle('dark-mode');
         }
 
-        // Restore saved resume data
         window.addEventListener('load', () => {
             const saved = JSON.parse(localStorage.getItem("lastResume"));
             if (saved) {
