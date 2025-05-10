@@ -13,7 +13,6 @@
       --accent-hover: #005bb5;
       --font-primary: 'Segoe UI', sans-serif;
     }
-
     body {
       font-family: var(--font-primary);
       text-align: center;
@@ -22,12 +21,10 @@
       color: var(--text-dark);
       transition: all 0.3s ease;
     }
-
     body.dark-mode {
       background-color: var(--bg-dark);
       color: var(--text-light);
     }
-
     form {
       background-color: #fff;
       padding: 25px;
@@ -37,11 +34,9 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s ease;
     }
-
     body.dark-mode form {
       background-color: #1e1e1e;
     }
-
     input, textarea, select {
       width: 90%;
       margin: 12px auto;
@@ -51,7 +46,6 @@
       border: 1px solid #ccc;
       display: block;
     }
-
     button {
       margin: 12px 6px;
       padding: 12px 22px;
@@ -63,12 +57,10 @@
       cursor: pointer;
       transition: background-color 0.3s, transform 0.2s;
     }
-
     button:hover {
       background-color: var(--accent-hover);
       transform: scale(1.02);
     }
-
     pre {
       white-space: pre-wrap;
       text-align: left;
@@ -81,12 +73,10 @@
       font-family: monospace;
       transition: all 0.3s;
     }
-
     body.dark-mode pre {
       background-color: #2a2a2a;
       border-color: #444;
     }
-
     .template-preview {
       display: flex;
       justify-content: center;
@@ -94,7 +84,6 @@
       gap: 15px;
       margin-top: 10px;
     }
-
     .template-box {
       width: 100px;
       height: 120px;
@@ -107,11 +96,9 @@
       position: relative;
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
-
     .template-box.locked {
       opacity: 0.5;
     }
-
     .template-box.locked::after {
       content: '🔒';
       position: absolute;
@@ -120,17 +107,14 @@
       font-size: 16px;
       color: #f00;
     }
-
     .template-box.selected {
       border-color: var(--accent);
       transform: scale(1.05);
     }
-
     @media (max-width: 600px) {
       form, pre {
         width: 95%;
       }
-
       .template-box {
         width: 80px;
         height: 100px;
@@ -141,50 +125,65 @@
 <body>
   <h1>🎯 AI Resume Builder</h1>
   <button onclick="window.location.href='https://buy.stripe.com/test_3cs3fS5ezaoI2nmaEE'">💎 Unlock Premium Features</button>
-
   <form id="resumeForm">
     <input type="text" name="full_name" placeholder="Full Name" required><br>
     <input type="email" name="email" placeholder="Email" required><br>
     <input type="text" name="job_title" placeholder="Target Job Title" required><br>
     <textarea name="skills" placeholder="Skills (comma separated)" required></textarea><br>
     <textarea name="experiences" placeholder="Work Experience Highlights (separate with |)" required></textarea><br>
-
     <label><strong>Choose Resume Style:</strong></label>
     <div class="template-preview">
       <div class="template-box premium-only locked" onclick="selectTemplate('modern')">Modern<br><small>Clean & minimal</small></div>
       <div class="template-box premium-only locked" onclick="selectTemplate('corporate')">Corporate<br><small>Structured layout</small></div>
       <div class="template-box premium-only locked" onclick="selectTemplate('creative')">Creative<br><small>Bold headings</small></div>
     </div>
-
     <input type="hidden" name="template" id="template" value="modern">
-
     <button type="submit">Generate Resume</button>
     <button type="button" onclick="generateCoverLetter()" class="premium-only" disabled>Generate Cover Letter</button>
     <button type="button" onclick="copyToClipboard()">Copy to Clipboard</button>
     <button type="button" onclick="downloadPDF()" class="premium-only" disabled>Download as PDF</button>
     <button type="button" onclick="toggleDarkMode()" class="premium-only" disabled>Toggle Dark Mode</button>
   </form>
-
   <h2>Your AI-Generated Output:</h2>
   <pre id="result"></pre>
 
   <script>
     const premium = localStorage.getItem("premium") === "true" || window.location.search.includes("premium=true");
-
     function enablePremiumFeatures() {
       document.querySelectorAll('.premium-only').forEach(btn => btn.removeAttribute('disabled'));
       document.querySelectorAll('.template-box').forEach(box => box.classList.remove('locked'));
       localStorage.setItem("premium", "true");
     }
-
     if (premium) enablePremiumFeatures();
-
     function selectTemplate(templateName) {
       if (!premium) return alert("Please unlock premium to access templates.");
       document.querySelectorAll('.template-box').forEach(box => box.classList.remove('selected'));
       document.getElementById('template').value = templateName;
       [...document.querySelectorAll('.template-box')].find(el => el.textContent.toLowerCase().includes(templateName)).classList.add('selected');
     }
+    document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        full_name: form.full_name.value,
+        email: form.email.value,
+        job_title: form.job_title.value,
+        skills: form.skills.value.split(',').map(s => s.trim()),
+        experiences: form.experiences.value.split('|').map(e => e.trim()),
+        template: form.template.value
+      };
+      try {
+        const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_resume/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        document.getElementById('result').innerText = result.resume || 'No resume generated.';
+      } catch (err) {
+        document.getElementById('result').innerText = 'Error generating resume. Please try again.';
+      }
+    });
   </script>
 </body>
 </html>
