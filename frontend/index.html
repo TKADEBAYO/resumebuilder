@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>AI Resume Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
       --bg-light: #f4f4f4;
@@ -16,7 +17,7 @@
     body {
       font-family: var(--font-primary);
       text-align: center;
-      padding: 30px;
+      padding: 20px;
       background-color: var(--bg-light);
       color: var(--text-dark);
       transition: all 0.3s ease;
@@ -27,7 +28,7 @@
     }
     form {
       background-color: #fff;
-      padding: 25px;
+      padding: 20px;
       margin: 0 auto;
       max-width: 600px;
       border-radius: 10px;
@@ -38,17 +39,17 @@
       background-color: #1e1e1e;
     }
     input, textarea, select {
-      width: 90%;
-      margin: 12px auto;
+      width: 100%;
+      margin: 10px 0;
       padding: 12px;
       font-size: 16px;
       border-radius: 6px;
       border: 1px solid #ccc;
-      display: block;
+      box-sizing: border-box;
     }
     button {
-      margin: 12px 6px;
-      padding: 12px 22px;
+      margin: 10px 5px;
+      padding: 12px 20px;
       font-size: 16px;
       background-color: var(--accent);
       color: white;
@@ -79,12 +80,14 @@
     }
     .template-preview {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 10px;
+      overflow-x: auto;
+      gap: 10px;
+      margin: 10px 0;
+      padding-bottom: 10px;
+      scrollbar-width: thin;
     }
     .template-box {
+      flex: 0 0 auto;
       width: 100px;
       height: 120px;
       border: 2px solid #ccc;
@@ -112,8 +115,12 @@
       transform: scale(1.05);
     }
     @media (max-width: 600px) {
-      form, pre {
-        width: 95%;
+      body {
+        padding: 10px;
+      }
+      button {
+        width: 100%;
+        margin: 8px 0;
       }
       .template-box {
         width: 80px;
@@ -146,8 +153,6 @@
   </form>
   <h2>Your AI-Generated Output:</h2>
   <pre id="result"></pre>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const premium = localStorage.getItem("premium") === "true" || window.location.search.includes("premium=true");
     function enablePremiumFeatures() {
@@ -185,13 +190,11 @@
         document.getElementById('result').innerText = 'Error generating resume. Please try again.';
       }
     });
-
     async function downloadPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const resumeText = document.getElementById('result').innerText;
       if (!resumeText.trim()) return alert("Please generate a resume first!");
-
       const lines = resumeText.split('\n');
       let y = 20;
       doc.setFont("Helvetica");
@@ -218,5 +221,6 @@
       doc.save(filename);
     }
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
