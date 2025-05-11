@@ -141,12 +141,13 @@
     <button type="submit">Generate Resume</button>
     <button type="button" onclick="generateCoverLetter()" class="premium-only" disabled>Generate Cover Letter</button>
     <button type="button" onclick="copyToClipboard()">Copy to Clipboard</button>
-    <button type="button" onclick="downloadPDF()" class="premium-only" disabled>Download as PDF</button>
+    <button type="button" onclick="downloadPDF()">Download as PDF</button>
     <button type="button" onclick="toggleDarkMode()" class="premium-only" disabled>Toggle Dark Mode</button>
   </form>
   <h2>Your AI-Generated Output:</h2>
   <pre id="result"></pre>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const premium = localStorage.getItem("premium") === "true" || window.location.search.includes("premium=true");
     function enablePremiumFeatures() {
@@ -184,6 +185,38 @@
         document.getElementById('result').innerText = 'Error generating resume. Please try again.';
       }
     });
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const resumeText = document.getElementById('result').innerText;
+      if (!resumeText.trim()) return alert("Please generate a resume first!");
+
+      const lines = resumeText.split('\n');
+      let y = 20;
+      doc.setFont("Helvetica");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (i === 0) {
+          doc.setFontSize(16);
+          doc.setFont(undefined, 'bold');
+        } else if (line.toLowerCase().includes("summary") || line.toLowerCase().includes("skills") || line.toLowerCase().includes("experience")) {
+          doc.setFontSize(13);
+          doc.setFont(undefined, 'bold');
+        } else {
+          doc.setFontSize(11);
+          doc.setFont(undefined, 'normal');
+        }
+        const wrapped = doc.splitTextToSize(line, 180);
+        doc.text(wrapped, 15, y);
+        y += wrapped.length * 6;
+        if (y > 270) { doc.addPage(); y = 20; }
+      }
+      const name = document.querySelector("input[name='full_name']").value.trim().replace(/\s+/g, '_') || 'Resume';
+      const job = document.querySelector("input[name='job_title']").value.trim().replace(/\s+/g, '_') || 'Job';
+      const filename = `${name}_${job}_Resume.pdf`;
+      doc.save(filename);
+    }
   </script>
 </body>
 </html>
