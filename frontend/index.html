@@ -130,97 +130,80 @@
   </style>
 </head>
 <body>
-  <h1>🎯 AI Resume Builder</h1>
-  <button onclick="window.location.href='https://buy.stripe.com/test_3cs3fS5ezaoI2nmaEE'">💎 Unlock Premium Features</button>
-  <form id="resumeForm">
-    <input type="text" name="full_name" placeholder="Full Name" required><br>
-    <input type="email" name="email" placeholder="Email" required><br>
-    <input type="text" name="job_title" placeholder="Target Job Title" required><br>
-    <textarea name="skills" placeholder="Skills (comma separated)" required></textarea><br>
-    <textarea name="experiences" placeholder="Work Experience Highlights (separate with |)" required></textarea><br>
-    <label><strong>Choose Resume Style:</strong></label>
-    <div class="template-preview">
-      <div class="template-box premium-only locked" onclick="selectTemplate('modern')">Modern<br><small>Clean & minimal</small></div>
-      <div class="template-box premium-only locked" onclick="selectTemplate('corporate')">Corporate<br><small>Structured layout</small></div>
-      <div class="template-box premium-only locked" onclick="selectTemplate('creative')">Creative<br><small>Bold headings</small></div>
-    </div>
-    <input type="hidden" name="template" id="template" value="modern">
-    <button type="submit">Generate Resume</button>
-    <button type="button" onclick="generateCoverLetter()" class="premium-only" disabled>Generate Cover Letter</button>
-    <button type="button" onclick="copyToClipboard()">Copy to Clipboard</button>
-    <button type="button" onclick="downloadPDF()">Download as PDF</button>
-    <button type="button" onclick="toggleDarkMode()" class="premium-only" disabled>Toggle Dark Mode</button>
-  </form>
-  <h2>Your AI-Generated Output:</h2>
-  <pre id="result"></pre>
-  <script>
-    const premium = localStorage.getItem("premium") === "true" || window.location.search.includes("premium=true");
-    function enablePremiumFeatures() {
-      document.querySelectorAll('.premium-only').forEach(btn => btn.removeAttribute('disabled'));
-      document.querySelectorAll('.template-box').forEach(box => box.classList.remove('locked'));
-      localStorage.setItem("premium", "true");
-    }
-    if (premium) enablePremiumFeatures();
-    function selectTemplate(templateName) {
-      if (!premium) return alert("Please unlock premium to access templates.");
-      document.querySelectorAll('.template-box').forEach(box => box.classList.remove('selected'));
-      document.getElementById('template').value = templateName;
-      [...document.querySelectorAll('.template-box')].find(el => el.textContent.toLowerCase().includes(templateName)).classList.add('selected');
-    }
-    document.getElementById('resumeForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      const data = {
-        full_name: form.full_name.value,
-        email: form.email.value,
-        job_title: form.job_title.value,
-        skills: form.skills.value.split(',').map(s => s.trim()),
-        experiences: form.experiences.value.split('|').map(e => e.trim()),
-        template: form.template.value
-      };
-      try {
-        const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_resume/', {
+    <h1>🎯 AI Resume Builder</h1>
+    <button onclick="window.location.href='https://buy.stripe.com/test_3cs3fS5ezaoI2nmaEE'">💎 Unlock Premium Features</button>
+    <form id="resumeForm">
+      <input type="text" name="full_name" placeholder="Full Name" required><br>
+      <input type="email" name="email" placeholder="Email" required><br>
+      <input type="text" name="job_title" placeholder="Target Job Title" required><br>
+      <textarea name="skills" placeholder="Skills (comma separated)" required></textarea><br>
+      <textarea name="experiences" placeholder="Work Experience Highlights (separate with |)" required></textarea><br>
+      <label><strong>Choose Resume Style:</strong></label>
+      <div class="template-preview">
+        <div class="template-box premium-only locked" onclick="selectTemplate('modern')">Modern<br><small>Clean & minimal</small></div>
+        <div class="template-box premium-only locked" onclick="selectTemplate('corporate')">Corporate<br><small>Structured layout</small></div>
+        <div class="template-box premium-only locked" onclick="selectTemplate('creative')">Creative<br><small>Bold headings</small></div>
+      </div>
+      <input type="hidden" name="template" id="template" value="modern">
+      <button type="submit">Generate Resume</button>
+      <button type="button" onclick="generateCoverLetter()" class="premium-only" disabled>Generate Cover Letter</button>
+      <button type="button" onclick="copyToClipboard()">Copy to Clipboard</button>
+      <button type="button" onclick="downloadPDF()">Download as PDF</button>
+      <button type="button" onclick="sendEmail()">Send to My Email</button>
+      <button type="button" onclick="toggleDarkMode()" class="premium-only" disabled>Toggle Dark Mode</button>
+    </form>
+    <h2>Your AI-Generated Output:</h2>
+    <pre id="result"></pre>
+    <script>
+      const premium = localStorage.getItem("premium") === "true" || window.location.search.includes("premium=true");
+      function enablePremiumFeatures() {
+        document.querySelectorAll('.premium-only').forEach(btn => btn.removeAttribute('disabled'));
+        document.querySelectorAll('.template-box').forEach(box => box.classList.remove('locked'));
+        localStorage.setItem("premium", "true");
+      }
+      if (premium) enablePremiumFeatures();
+      function selectTemplate(templateName) {
+        if (!premium) return alert("Please unlock premium to access templates.");
+        document.querySelectorAll('.template-box').forEach(box => box.classList.remove('selected'));
+        document.getElementById('template').value = templateName;
+        [...document.querySelectorAll('.template-box')].find(el => el.textContent.toLowerCase().includes(templateName)).classList.add('selected');
+      }
+      document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+          full_name: form.full_name.value,
+          email: form.email.value,
+          job_title: form.job_title.value,
+          skills: form.skills.value.split(',').map(s => s.trim()),
+          experiences: form.experiences.value.split('|').map(e => e.trim()),
+          template: form.template.value
+        };
+        try {
+          const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_resume/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const result = await response.json();
+          document.getElementById('result').innerText = result.resume || 'No resume generated.';
+        } catch (err) {
+          document.getElementById('result').innerText = 'Error generating resume. Please try again.';
+        }
+      });
+      async function sendEmail() {
+        const resume = document.getElementById('result').innerText;
+        const email = document.querySelector("input[name='email']").value;
+        if (!resume.trim()) return alert("Please generate a resume first!");
+        const response = await fetch('https://resumebuilder-kmsg.onrender.com/send_resume_email/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          body: JSON.stringify({ email: email, resume: resume })
         });
         const result = await response.json();
-        document.getElementById('result').innerText = result.resume || 'No resume generated.';
-      } catch (err) {
-        document.getElementById('result').innerText = 'Error generating resume. Please try again.';
+        alert(result.message || 'Email sent!');
       }
-    });
-    async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const resumeText = document.getElementById('result').innerText;
-      if (!resumeText.trim()) return alert("Please generate a resume first!");
-      const lines = resumeText.split('\n');
-      let y = 20;
-      doc.setFont("Helvetica");
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (i === 0) {
-          doc.setFontSize(16);
-          doc.setFont(undefined, 'bold');
-        } else if (line.toLowerCase().includes("summary") || line.toLowerCase().includes("skills") || line.toLowerCase().includes("experience")) {
-          doc.setFontSize(13);
-          doc.setFont(undefined, 'bold');
-        } else {
-          doc.setFontSize(11);
-          doc.setFont(undefined, 'normal');
-        }
-        const wrapped = doc.splitTextToSize(line, 180);
-        doc.text(wrapped, 15, y);
-        y += wrapped.length * 6;
-        if (y > 270) { doc.addPage(); y = 20; }
-      }
-      const name = document.querySelector("input[name='full_name']").value.trim().replace(/\s+/g, '_') || 'Resume';
-      const job = document.querySelector("input[name='job_title']").value.trim().replace(/\s+/g, '_') || 'Job';
-      const filename = `${name}_${job}_Resume.pdf`;
-      doc.save(filename);
-    }
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-</body>
-</html>
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  </body>
+  </html>
