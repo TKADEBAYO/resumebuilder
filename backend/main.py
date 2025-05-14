@@ -5,9 +5,13 @@ from openai import OpenAI
 import os
 import smtplib
 from email.message import EmailMessage
+from dotenv import load_dotenv  # ✅ Load .env variables
+
+load_dotenv()  # ✅ Load environment variables from .env file
 
 app = FastAPI()
 
+# CORS settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,8 +20,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Models
 class ResumeRequest(BaseModel):
     full_name: str
     email: str
@@ -29,6 +35,7 @@ class EmailRequest(BaseModel):
     email: str
     resume: str
 
+# Generate Resume
 @app.post("/generate_resume/")
 async def generate_resume(data: ResumeRequest):
     resume_prompt = f"""
@@ -62,6 +69,7 @@ async def generate_resume(data: ResumeRequest):
     resume_text = response.choices[0].message.content
     return {"resume": resume_text}
 
+# Send Resume via Email
 @app.post("/send_resume_email/")
 async def send_resume_email(data: EmailRequest):
     try:
