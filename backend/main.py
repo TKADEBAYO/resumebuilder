@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
+from dotenv import load_dotenv
 import os
-import smtplib
-from email.message import EmailMessage
-from dotenv import load_dotenv  # ✅ Load .env variables
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-load_dotenv()  # ✅ Load environment variables from .env file
+load_dotenv()  # ✅ Load variables from .env
 
 app = FastAPI()
 
@@ -69,21 +69,18 @@ async def generate_resume(data: ResumeRequest):
     resume_text = response.choices[0].message.content
     return {"resume": resume_text}
 
-# Send Resume via Email
+# Send Resume via Email (SendGrid SDK)
 @app.post("/send_resume_email/")
 async def send_resume_email(data: EmailRequest):
     try:
-        msg = EmailMessage()
-        msg['Subject'] = "Your AI-Generated Resume"
-        msg['From'] = os.getenv("EMAIL_SENDER")
-        msg['To'] = data.email
-        msg.set_content(data.resume)
-
-        with smtplib.SMTP("smtp.sendgrid.net", 587) as server:
-            server.starttls()
-            server.login("apikey", os.getenv("SENDGRID_API_KEY"))
-            server.send_message(msg)
-
+        message = Mail(
+            from_email=os.getenv("EMAIL_SENDER"),
+            to_emails=data.email,
+            subject="Your AI-Generated Resume",
+            plain_text_content=data.resume
+        )
+        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
+        sg.send(message)
         return {"message": "✅ Resume sent to your inbox!"}
     except Exception as e:
         return {"message": f"❌ Failed to send email: {e}"}
