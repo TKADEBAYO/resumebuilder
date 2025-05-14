@@ -79,7 +79,7 @@ async def send_resume_email(data: EmailRequest):
             subject="Your AI-Generated Resume",
             plain_text_content=data.resume
         )
-        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
+        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY").strip())
         sg.send(message)
         return {"message": "✅ Resume sent to your inbox!"}
     except Exception as e:
