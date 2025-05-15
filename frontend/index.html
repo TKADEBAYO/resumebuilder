@@ -1,3 +1,10 @@
+
+✅ No changes to your existing structure or features
+
+✅ Copy and paste this full version of index.html:
+html
+Copy
+Edit
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -174,6 +181,13 @@
     <input type="text" name="job_title" placeholder="Target Job Title" required><br>
     <textarea name="skills" placeholder="Skills (comma separated)" required></textarea><br>
     <textarea name="experiences" placeholder="Work Experience Highlights (separate with |)" required></textarea><br>
+
+    <hr>
+    <label><strong>Auto-Fill From LinkedIn PDF:</strong></label><br>
+    <input type="file" id="linkedinPdf" accept="application/pdf"><br>
+    <button type="button" onclick="parseLinkedInPDF()">Auto-Fill From LinkedIn PDF</button>
+    <hr>
+
     <label><strong>Choose Resume Style:</strong></label>
     <div class="template-preview">
       <div class="template-box selected" onclick="selectTemplate('modern')">Modern<br><small>Clean & minimal</small></div>
@@ -255,7 +269,8 @@
         skills: form.skills.value.split(',').map(s => s.trim()),
         experiences: form.experiences.value.split('|').map(e => e.trim())
       };
-     const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_cover_letter/', {
+      
+      const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_cover_letter/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -274,6 +289,37 @@
       });
       const result = await response.json();
       alert(result.message || 'Email sent!');
+    }
+
+    // 👇 LinkedIn PDF auto-fill logic
+    async function parseLinkedInPDF() {
+      const fileInput = document.getElementById('linkedinPdf');
+      const file = fileInput.files[0];
+
+      if (!file) return alert("Please upload a LinkedIn PDF first.");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch('https://resumebuilder-kmsg.onrender.com/upload_linkedin_pdf/', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.error) return alert(data.error);
+
+        document.querySelector("input[name='full_name']").value = data.full_name || "";
+        document.querySelector("input[name='job_title']").value = data.job_title || "";
+        document.querySelector("textarea[name='skills']").value = data.skills.join(", ");
+        document.querySelector("textarea[name='experiences']").value = data.experiences.join(" | ");
+
+        alert("✅ Form auto-filled from LinkedIn PDF!");
+      } catch (err) {
+        alert("❌ Failed to process PDF. Please try again.");
+      }
     }
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
