@@ -162,7 +162,7 @@
     <button type="button" onclick="copyToClipboard()">Copy to Clipboard</button>
     <button type="button" onclick="downloadPDF()">Download as PDF</button>
     <button type="button" onclick="sendEmail()">Send to My Email</button>
-    <button type="button" onclick="toggleDarkMode()" class="premium-only" disabled>Toggle Dark Mode</button>
+    <button type="button" onclick="toggleDarkMode()">Toggle Dark Mode</button>
   </form>
   <h2>Your AI-Generated Output:</h2>
   <pre id="result" class="modern"></pre>
@@ -181,8 +181,7 @@
       document.querySelectorAll('.template-box').forEach(box => box.classList.remove('selected'));
       document.getElementById('template').value = templateName;
       [...document.querySelectorAll('.template-box')].find(el => el.textContent.toLowerCase().includes(templateName)).classList.add('selected');
-      const preview = document.getElementById('result');
-      preview.className = templateName;
+      document.getElementById('result').className = templateName;
     }
     document.getElementById('resumeForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -207,6 +206,39 @@
         document.getElementById('result').innerText = 'Error generating resume. Please try again.';
       }
     });
+    function copyToClipboard() {
+      const text = document.getElementById('result').innerText;
+      navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+    }
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const resumeText = document.getElementById('result').innerText;
+      if (!resumeText.trim()) return alert("Please generate a resume first!");
+      const lines = doc.splitTextToSize(resumeText, 180);
+      doc.text(lines, 15, 20);
+      doc.save("AI_Resume.pdf");
+    }
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+    async function generateCoverLetter() {
+      const form = document.getElementById('resumeForm');
+      const data = {
+        full_name: form.full_name.value,
+        email: form.email.value,
+        job_title: form.job_title.value,
+        skills: form.skills.value.split(',').map(s => s.trim()),
+        experiences: form.experiences.value.split('|').map(e => e.trim())
+      };
+      const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_resume/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      document.getElementById('result').innerText = "COVER LETTER:\n\n" + result.resume;
+    }
     async function sendEmail() {
       const resume = document.getElementById('result').innerText;
       const email = document.querySelector("input[name='email']").value;
