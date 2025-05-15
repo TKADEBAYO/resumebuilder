@@ -152,9 +152,9 @@
     <textarea name="experiences" placeholder="Work Experience Highlights (separate with |)" required></textarea><br>
     <label><strong>Choose Resume Style:</strong></label>
     <div class="template-preview">
-      <div class="template-box" onclick="selectTemplate('modern')">Modern<br><small>Clean & minimal</small></div>
-      <div class="template-box" onclick="selectTemplate('corporate')">Corporate<br><small>Structured layout</small></div>
-      <div class="template-box" onclick="selectTemplate('creative')">Creative<br><small>Bold headings</small></div>
+      <div class="template-box selected" onclick="selectTemplate('modern')">Modern<br><small>Clean & minimal</small></div>
+      <div class="template-box premium-only locked" onclick="selectTemplate('corporate')">Corporate<br><small>Structured layout</small></div>
+      <div class="template-box premium-only locked" onclick="selectTemplate('creative')">Creative<br><small>Bold headings</small></div>
     </div>
     <input type="hidden" name="template" id="template" value="modern">
     <button type="submit">Generate Resume</button>
@@ -171,10 +171,13 @@
     if (premium) enablePremiumFeatures();
     function enablePremiumFeatures() {
       document.querySelectorAll('.premium-only').forEach(btn => btn.removeAttribute('disabled'));
-      document.querySelectorAll('.template-box').forEach(box => box.classList.remove('locked'));
+      document.querySelectorAll('.template-box.premium-only').forEach(box => box.classList.remove('locked'));
       localStorage.setItem("premium", "true");
     }
     function selectTemplate(templateName) {
+      if ((templateName === 'corporate' || templateName === 'creative') && !premium) {
+        return alert("🔒 Please unlock premium to use this template.");
+      }
       document.querySelectorAll('.template-box').forEach(box => box.classList.remove('selected'));
       document.getElementById('template').value = templateName;
       [...document.querySelectorAll('.template-box')].find(el => el.textContent.toLowerCase().includes(templateName)).classList.add('selected');
