@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thank You – Premium Unlocked</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background-color: #f8f9fa;
+      padding: 60px 20px;
+    }
+    h1 {
+      color: #0070f3;
+      font-size: 36px;
+    }
+    p {
+      font-size: 18px;
+      color: #333;
+      margin: 20px 0;
+    }
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      background-color: #0070f3;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    a:hover {
+      background-color: #005bb5;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎉 Thank You!</h1>
+  <p>Your premium access has been unlocked.</p>
+  <p>Return to the resume builder to enjoy all features.</p>
+  <a href="index.html?premium=true">Go to Resume Builder</a>
+
+  <script>
+    // Unlock features for this session
+    localStorage.setItem("premium", "true");
+  </script>
+</body>
+</html>
