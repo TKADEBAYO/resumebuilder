@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+import pdfplumber
+import io  # Needed to process uploaded PDF files
 
 load_dotenv()  # ✅ Load variables from .env
 
@@ -69,6 +71,7 @@ async def generate_resume(data: ResumeRequest):
     resume_text = response.choices[0].message.content
     return {"resume": resume_text}
 
+# Generate Cover Letter
 @app.post("/generate_cover_letter/")
 async def generate_cover_letter(data: ResumeRequest):
     prompt = f"""
@@ -116,3 +119,54 @@ async def send_resume_email(data: EmailRequest):
         return {"message": "✅ Resume sent to your inbox!"}
     except Exception as e:
         return {"message": f"❌ Failed to send email: {e}"}
+
+# Upload LinkedIn PDF and extract fields
+@app.post("/upload_linkedin_pdf/")
+async def upload_linkedin_pdf(file: UploadFile = File(...)):
+    if not file.filename.endswith(".pdf"):
+        return {"error": "Only PDF files are supported."}
+
+    content = await file.read()
+
+    try:
+        with pdfplumber.open(io.BytesIO(content)) as pdf:
+            full_text = ""
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    full_text += page_text + "\n"
+    except Exception as e:
+        return {"error": f"Failed to parse PDF: {e}"}
+
+    lines = full_text.splitlines()
+
+    # Clean name: first non-empty line
+    name = next((line.strip() for line in lines if line.strip()), "Unknown")
+
+    # Filter experience lines
+    experience_keywords = [
+        "engineer", "manager", "developer", "consultant", "intern",
+        "specialist", "analyst", "architect", "lead", "officer"
+    ]
+    experiences = [
+        line.strip() for line in lines
+        if any(keyword in line.lower() for keyword in experience_keywords)
+    ][:5]
+
+    # Extract skills: look for "skills" header
+    skills_section = ""
+    for i, line in enumerate(lines):
+        if "skills" in line.lower():
+            if i + 1 < len(lines):
+                skills_section = lines[i + 1]
+            break
+
+    # Clean and split skills
+    skills = [s.strip() for s in skills_section.replace("|", ",").split(",") if s.strip()]
+
+    return {
+        "full_name": name,
+        "job_title": experiences[0] if experiences else "",
+        "experiences": experiences,
+        "skills": skills
+    }
