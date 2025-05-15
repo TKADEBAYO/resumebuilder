@@ -167,7 +167,7 @@
 </head>
 <body>
   <h1>🎯 AI Resume Builder</h1>
-  <button onclick="window.location.href='https://buy.stripe.com/test_3cs3fS5ezaoI2nmaEE'">💎 Unlock Premium Features</button>
+  <button onclick="startCheckout()">💎 Unlock Premium Features</button>
   <form id="resumeForm">
     <input type="text" name="full_name" placeholder="Full Name" required><br>
     <input type="email" name="email" placeholder="Email" required><br>
@@ -314,6 +314,13 @@
         alert("❌ Failed to process PDF. Please try again.");
       }
     }
+    function startCheckout() {
+  // Your existing Stripe Payment Link with success redirect
+  const stripeURL = "https://buy.stripe.com/test_3cs3fS5ezaoI2nmaEE?prefilled_premium=true&success_url=https://resumebuilder-fawn-five.vercel.app/thank-you.html";
+
+  // Redirect to Stripe with post-payment redirect
+  window.location.href = stripeURL;
+}
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
