@@ -69,6 +69,38 @@ async def generate_resume(data: ResumeRequest):
     resume_text = response.choices[0].message.content
     return {"resume": resume_text}
 
+@app.post("/generate_cover_letter/")
+async def generate_cover_letter(data: ResumeRequest):
+    prompt = f"""
+    You are a professional career coach. Write a personalized, concise, and compelling cover letter for the following person:
+
+    - Full Name: {data.full_name}
+    - Target Job Title: {data.job_title}
+    - Email: {data.email}
+    - Skills: {', '.join(data.skills)}
+    - Experience Highlights:
+    {' '.join(f"- {exp}" for exp in data.experiences)}
+
+    Guidelines:
+    - Use a warm, confident tone
+    - Mention the job title
+    - Focus on value, not repetition of resume
+    - No more than 4 paragraphs
+    - Address it generally (e.g. Dear Hiring Manager)
+
+    Output only the cover letter text.
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
+        max_tokens=800
+    )
+
+    letter = response.choices[0].message.content
+    return {"resume": letter}
+
 # Send Resume via Email (SendGrid SDK)
 @app.post("/send_resume_email/")
 async def send_resume_email(data: EmailRequest):
