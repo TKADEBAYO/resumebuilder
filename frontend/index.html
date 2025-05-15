@@ -255,7 +255,7 @@
         skills: form.skills.value.split(',').map(s => s.trim()),
         experiences: form.experiences.value.split('|').map(e => e.trim())
       };
-      const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_resume/', {
+     const response = await fetch('https://resumebuilder-kmsg.onrender.com/generate_cover_letter/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
