@@ -166,3 +166,30 @@ async def upload_linkedin_pdf(file: UploadFile = File(...)):
         "experiences": experiences,
         "skills": skills
     }
+@app.post("/suggest_jobs/")
+async def suggest_jobs(data: ResumeRequest):
+    prompt = f"""
+    You are a career advisor. Based on the following person's background, suggest 5–10 job titles that would be a great fit.
+
+    - Skills: {', '.join(data.skills)}
+    - Experience: {', '.join(data.experiences)}
+    - Target Role: {data.job_title}
+
+    Guidelines:
+    - Keep job titles short and realistic
+    - Prioritize roles that match the skill set
+    - Include a mix of entry-level to senior roles if appropriate
+
+    Output:
+    A numbered list of job titles.
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.6,
+        max_tokens=500
+    )
+
+    suggestions = response.choices[0].message.content
+    return {"suggestions": suggestions}
