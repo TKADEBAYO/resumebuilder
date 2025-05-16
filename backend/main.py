@@ -6,8 +6,7 @@ from dotenv import load_dotenv
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-import pdfplumber
-import io  # Needed to process uploaded PDF files
+import fitz
 
 load_dotenv()  # ✅ Load variables from .env
 
@@ -129,14 +128,12 @@ async def upload_linkedin_pdf(file: UploadFile = File(...)):
     content = await file.read()
 
     try:
-        with pdfplumber.open(io.BytesIO(content)) as pdf:
-            full_text = ""
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    full_text += page_text + "\n"
+        doc = fitz.open(stream=content, filetype="pdf")
+        full_text = ""
+        for page in doc:
+            full_text += page.get_text() + "\n"
     except Exception as e:
-        return {"error": f"Failed to parse PDF: {e}"}
+        return {"error": f"Failed to parse PDF: {str(e)}"}
 
     lines = full_text.splitlines()
 
@@ -161,7 +158,6 @@ async def upload_linkedin_pdf(file: UploadFile = File(...)):
                 skills_section = lines[i + 1]
             break
 
-    # Clean and split skills
     skills = [s.strip() for s in skills_section.replace("|", ",").split(",") if s.strip()]
 
     return {
